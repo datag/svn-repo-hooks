@@ -1,10 +1,4 @@
 #!/usr/bin/env bash
-#
-# no/short message
-# big file
-# temp file
-# prevent alter tag
-
 ################################################################################
 REPOS="$1"	# Absolute repository path
 TXN="$2"	# Transaction ID of pending commit
@@ -12,6 +6,7 @@ TXN="$2"	# Transaction ID of pending commit
 
 RULE_logmessage_minlength=1
 RULE_newfile_maxsize=$((5 * 1024*1024))
+RULE_newfile_temp=("Thumbs.db" ".DS_STORE")
 
 function svnlook_txn()
 {
@@ -48,31 +43,72 @@ function rule_logmessage()
 
 function rule_bigfiles()
 {
-	declare line
+	declare line filepath
+	declare -i filesize
 	
 	while read -r line; do
-		##msg "DEBUG: $line"
-		# file has been added (new file "A   ", not copied "A + ")
-		if { egrep '^A\s{3}' &>/dev/null <<<"$line"; } && ! has_force FORCE_BIGFILES; then
-			declare filepath=${line:4}
-			declare -i filesize=$(svnlook_txn filesize "$filepath") || errexit "Could not get filesize of changed file."
+		filepath=${line:4}
 		
-			if (( filesize > RULE_newfile_maxsize )); then
-				reject 20
-				msg " RULE: The new file '$filepath' shouldn't be bigger than $(byteshuman $RULE_newfile_maxsize), but is $(byteshuman $filesize)."
-				msg "FORCE: !FORCE_BIGFILES"
-				msg
-			fi
+		# new file has been added (new file "A   ", not copied "A + ")
+		if ! { { egrep -q '^A\s{3}' &>/dev/null <<<"$line"; } && [[ -f "$filepath" ]] && ! has_force FORCE_BIGFILES; } then
+			continue
 		fi
-	done < <(svnlook_txn changed --copy-info)
+		
+		filesize=$(svnlook_txn filesize "$filepath") || errexit "Could not get filesize of changed file."
+	
+		if (( filesize > RULE_newfile_maxsize )); then
+			reject 20
+			msg " RULE: The new file '$filepath' shouldn't be bigger than $(byteshuman $RULE_newfile_maxsize), but is $(byteshuman $filesize)."
+			msg "FORCE: !FORCE_BIGFILES"
+			msg
+		fi
+	done <<<"$CHANGED_CI"
+}
+
+function rule_tempfiles()
+{
+	declare line filepath filename tmp omit
+	
+	while read -r line; do
+		filepath=${line:4}
+		filename=${filepath##*/}
+		
+		# new file has been added (new file "A   ", not copied "A + ")
+		if ! { { egrep -q '^A\s{3}' &>/dev/null <<<"$line"; } && [[ -f "$filepath" ]] && ! has_force FORCE_TEMPFILES; } then
+			continue
+		fi
+		
+		omit=
+		for tmp in "${RULE_newfile_temp[@]}"; do
+			if [[ "$filename" == "$tmp" ]]; then
+				omit=1
+				break
+			fi
+		done
+		
+		if [[ ! -z "$omit" ]]; then
+			reject 20
+			msg " RULE: The new file '$filepath' seems to be a temporary file and shouldn't be committed."
+			msg "FORCE: !FORCE_TEMPFILES"
+			msg
+		fi
+	done <<<"$CHANGED_CI"
+}
+
+function rule_tagsalter()
+{
+	: # TODO: reject modifications to /tags
 }
 
 ################################################################################
 
 declare -i STATUS=0
 LOGMSG=$(svnlook_txn log) || errexit "Could not get transaction log message."
+CHANGED_CI=$(svnlook_txn changed --copy-info)
 
 rule_logmessage
 rule_bigfiles
+rule_tempfiles
+rule_tagsalter
 
 return $STATUS
