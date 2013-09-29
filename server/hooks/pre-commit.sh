@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 ################################################################################
-REPOS="$1"	# Absolute repository path
-TXN="$2"	# Transaction ID of pending commit
+REPOS="$1"
+TXN="$2"
 ################################################################################
 
 RULE_logmessage_minlength=1
