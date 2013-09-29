@@ -1,7 +1,7 @@
 svn-repo-hooks
 ==============
 
-Collection of Subversion repository hooks primarily aimed at pre-hooks.
+Collection of Subversion repository hooks primarily aimed at providing pre-hooks – actions that are performed _before_ changes are persisted to the repository.
 
 The hook scripts are written in Bash and make use of common tools such as sed and egrep.
 
@@ -22,13 +22,15 @@ Setup
 
 Symlink `repo-hooks.sh` into the repository's `hook` directory for the desired hook.
 
-Example for enabling pre-commit hooks:
+The following example setup is assumed for a Subversion repository `MY_REPO` located at `/var/lib/svn` and with this very scripts (`svn-repo-hooks`) copied/cloned to `/usr/local`.
+
+Enabling pre-commit hooks:
 ```bash
-$ ln -s /usr/local/svn-repo-hooks/repo-hooks.sh /var/lib/svn/MY_REPO/hooks/pre-commit
+$ ln -sf /usr/local/svn-repo-hooks/repo-hooks.sh /var/lib/svn/MY_REPO/hooks/pre-commit
 ```
 
-Example for enabling pre-revprop-change hooks:
+nabling pre-revprop-change hooks:
 ```bash
-$ ln -s /usr/local/svn-repo-hooks/repo-hooks.sh /var/lib/svn/MY_REPO/hooks/pre-revprop-change
+$ ln -sf /usr/local/svn-repo-hooks/repo-hooks.sh /var/lib/svn/MY_REPO/hooks/pre-revprop-change
 ```
 
