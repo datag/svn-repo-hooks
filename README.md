@@ -1,7 +1,9 @@
 svn-repo-hooks
 ==============
 
-Random Subversion repository hooks, written in Bash.
+Collection of Subversion repository hooks primarily aimed at pre-hooks.
+
+The hook scripts are written in Bash and make use of common tools such as sed and egrep.
 
 Features
 --------
