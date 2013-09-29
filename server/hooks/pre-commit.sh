@@ -87,7 +87,7 @@ function rule_tempfiles()
 		done
 		
 		if [[ ! -z "$omit" ]]; then
-			reject 20
+			reject 30
 			msg " RULE: The new file '$filepath' seems to be a temporary file and shouldn't be committed."
 			msg "FORCE: !FORCE_TEMPFILES"
 			msg
@@ -97,7 +97,20 @@ function rule_tempfiles()
 
 function rule_tagsalter()
 {
-	: # TODO: reject modifications to /tags
+	declare line filepath
+	
+	while read -r line; do
+
+		# existing tag has been modified
+		if ! { [[ $line == tags/?* ]] && ! has_force FORCE_TAGSALTER; } then
+			continue
+		fi
+		
+		reject 40
+		msg " RULE: It seems that a directory used as a tag is being modified. Tags shouldn't be modified."
+		msg "FORCE: !FORCE_TAGSALTER"
+		msg
+	done < <(svnlook_txn dirs-changed)
 }
 
 ################################################################################
