@@ -3,10 +3,6 @@ REPOS="$1"
 TXN="$2"
 ################################################################################
 
-RULE_logmessage_minlength=1
-RULE_newfile_maxsize=$((5 * 1024*1024))
-RULE_newfile_temp=("Thumbs.db" ".DS_STORE")
-
 function svnlook_txn()
 {
 	declare cmd=$1; shift

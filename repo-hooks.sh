@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
+################################################################################
+# svn-repo-hooks
+#
+# Author: Dominik D. Geyer <dominik.geyer@gmail.com>
+# Source: https://github.com/datag/svn-repo-hooks
+################################################################################
 
 set -o errexit -o pipefail -o nounset
 
-SVNLOOK=/usr/bin/svnlook
-
-################################################################################
 
 function msg()
 {
@@ -27,10 +30,17 @@ function byteshuman()
 ################################################################################
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
+
+source "$SCRIPT_DIR/config.sh" || errexit "Main configuration cannot be loaded."
+
+if [[ -r "$SCRIPT_DIR/config.local.sh" ]]; then
+	source "$SCRIPT_DIR/config.local.sh" || errexit "Local configuration cannot be loaded."
+fi
+
 HOOK=${0##*/}
 HOOK_SCRIPT="${SCRIPT_DIR}/hooks/${HOOK}.sh"
 
-[[ -r "${HOOK_SCRIPT}" ]] || errexit "Configuration error: Invalid hook '${HOOK}'."
+[[ -r "${HOOK_SCRIPT}" ]] || errexit "Unsupported hook '${HOOK}'."
 
 source "${HOOK_SCRIPT}"
 exit $?
