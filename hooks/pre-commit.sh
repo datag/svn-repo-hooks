@@ -12,7 +12,7 @@ function svnlook_txn()
 {
 	declare cmd=$1; shift
 	
-	$SVNLOOK $cmd --transaction "$TXN" "$REPOS" $@
+	$SVNLOOK $cmd --transaction "$TXN" "$REPOS" "$@"
 }
 
 function reject()
@@ -50,7 +50,7 @@ function rule_bigfiles()
 		filepath=${line:4}
 		
 		# new file has been added (new file "A   ", not copied "A + ")
-		if ! { { egrep -q '^A\s{3}' &>/dev/null <<<"$line"; } && [[ -f "$filepath" ]] && ! has_force FORCE_BIGFILES; } then
+		if ! { { egrep -q '^A\s{3}' &>/dev/null <<<"$line"; } && [[ "${filepath: -1:1}" != "/" ]] && ! has_force FORCE_BIGFILES; } then
 			continue
 		fi
 		
@@ -74,7 +74,7 @@ function rule_tempfiles()
 		filename=${filepath##*/}
 		
 		# new file has been added (new file "A   ", not copied "A + ")
-		if ! { { egrep -q '^A\s{3}' &>/dev/null <<<"$line"; } && [[ -f "$filepath" ]] && ! has_force FORCE_TEMPFILES; } then
+		if ! { { egrep -q '^A\s{3}' &>/dev/null <<<"$line"; } && [[ "${filepath: -1:1}" != "/" ]] && ! has_force FORCE_TEMPFILES; } then
 			continue
 		fi
 		
