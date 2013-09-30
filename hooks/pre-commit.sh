@@ -28,6 +28,16 @@ function has_force()
 	egrep -q -w '!'${rule} &>/dev/null <<<"$LOGMSG"
 }
 
+# svn file added:  "A   trunk/myfile"
+# svn file copied: "A + trunk/myfile"	(only if ´svnlook changed´ provided with ´--copy-info´)
+# ... D=deleted U=modified _U=property UU=modified&property
+function is_svn_status()
+{
+	declare line=$1 status=$2
+	declare t=$(printf "% -4s" "$status")
+	egrep -q "^${t}" &>/dev/null <<<"$line"
+}
+
 function rule_logmessage()
 {
 	declare cinfo=$(svnlook_txn info) || errexit "Could not get transaction info."
@@ -49,13 +59,11 @@ function rule_bigfiles()
 	while read -r line; do
 		filepath=${line:4}
 		
-		# new file has been added (new file "A   ", not copied "A + ")
-		if ! { { egrep -q '^A\s{3}' &>/dev/null <<<"$line"; } && [[ "${filepath: -1:1}" != "/" ]] && ! has_force FORCE_BIGFILES; } then
-			continue
-		fi
+		# is file, is new to repository ("A + "=copied), and commit is not forced
+		{ [[ "${filepath: -1:1}" != "/" ]] && is_svn_status "$line" "A" && ! has_force FORCE_BIGFILES; } || continue
 		
 		filesize=$(svnlook_txn filesize "$filepath") || errexit "Could not get filesize of changed file."
-	
+		
 		if (( filesize > RULE_newfile_maxsize )); then
 			reject 20
 			msg " RULE: The new file '$filepath' shouldn't be bigger than $(byteshuman $RULE_newfile_maxsize), but is $(byteshuman $filesize)."
@@ -71,13 +79,11 @@ function rule_tempfiles()
 	
 	while read -r line; do
 		filepath=${line:4}
+		
+		# is file, is new to repository ("A + "=cheap copy), and commit is not forced
+		{ [[ "${filepath: -1:1}" != "/" ]] && is_svn_status "$line" "A" && ! has_force FORCE_TEMPFILES; } || continue
+		
 		filename=${filepath##*/}
-		
-		# new file has been added (new file "A   ", not copied "A + ")
-		if ! { { egrep -q '^A\s{3}' &>/dev/null <<<"$line"; } && [[ "${filepath: -1:1}" != "/" ]] && ! has_force FORCE_TEMPFILES; } then
-			continue
-		fi
-		
 		omit=
 		for tmp in "${RULE_newfile_temp[@]}"; do
 			if [[ "$filename" == "$tmp" ]]; then
