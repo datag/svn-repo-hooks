@@ -8,14 +8,14 @@ The hook scripts are written in Bash and make use of common tools such as sed an
 Features
 --------
 
-Pre-commit:
+Rules for `pre-commit`:
   - Reject (or force-allow) empty or too short log messages.
   - Reject (or force-allow) adding new, big files.
   - Reject (or force-allow) a list of temporary files.
   - Reject (or force-allow) modifying an existing Subversion tag (path `/tags`).
 
-Pre-revprop-change:
-  - Permit modification of commit messages (revision property `svn:log`).
+Rules for `pre-revprop-change`:
+  - Permit modification of commit messages (revision property `svn:log`). This is more or less the original Subversion example hook.
 
 Setup
 -----
@@ -34,3 +34,9 @@ nabling pre-revprop-change hooks:
 $ ln -sf /usr/local/svn-repo-hooks/repo-hooks.sh /var/lib/svn/MY_REPO/hooks/pre-revprop-change
 ```
 
+Configuration
+-------------
+
+There is a `config.sh` in the root directory. This file includes the script's environment configuration and settings for rules in hooks.
+
+You can either edit this file directly or create a `config.local.sh` in the same directory and override variables to fit your needs.
