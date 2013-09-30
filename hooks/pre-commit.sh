@@ -54,7 +54,7 @@ function rule_bigfiles()
 	while read -r line; do
 		filepath=${line:4}
 		
-		# is file, is new to repository ("A + "=copied), and commit is not forced
+		# is file, is new to repository ("A + " is cheap copy), and commit is not forced
 		{ [[ "${filepath: -1:1}" != "/" ]] && is_svn_status "$line" "A" && ! has_force FORCE_BIGFILES; } || continue
 		
 		filesize=$(svnlook_txn filesize "$filepath") || errexit "Could not get filesize of changed file."
@@ -75,7 +75,7 @@ function rule_tempfiles()
 	while read -r line; do
 		filepath=${line:4}
 		
-		# is file, is new to repository ("A + "=cheap copy), and commit is not forced
+		# is file, is new to repository ("A + " is cheap copy), and commit is not forced
 		{ [[ "${filepath: -1:1}" != "/" ]] && is_svn_status "$line" "A" && ! has_force FORCE_TEMPFILES; } || continue
 		
 		filename=${filepath##*/}
