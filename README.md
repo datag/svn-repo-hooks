@@ -24,12 +24,12 @@ Symlink `repo-hooks.sh` into the repository's `hook` directory for the desired h
 
 The following example setup is assumed for a Subversion repository `MY_REPO` located at `/var/lib/svn` and with this very scripts (`svn-repo-hooks`) copied/cloned to `/usr/local`.
 
-Enabling pre-commit hooks:
+Enabling `pre-commit` hook:
 ```bash
 $ ln -sf /usr/local/svn-repo-hooks/repo-hooks.sh /var/lib/svn/MY_REPO/hooks/pre-commit
 ```
 
-nabling pre-revprop-change hooks:
+Enabling `pre-revprop-change` hook:
 ```bash
 $ ln -sf /usr/local/svn-repo-hooks/repo-hooks.sh /var/lib/svn/MY_REPO/hooks/pre-revprop-change
 ```
